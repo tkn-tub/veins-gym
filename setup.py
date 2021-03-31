@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="veins_gym",
-    version="0.1.0",
+    version="0.1.1",
     author="Dominik S. Buse",
     author_email="buse@ccs-labs.org",
     description="Reinforcement Learning-based VANET simulations",
@@ -21,4 +21,9 @@ setup(
     package_dir={'': 'src'},
     data_files=[('protobuf', ['protobuf/veinsgym.proto'])],
     packages=['veins_gym'],
+    install_requires=[
+        'gym',
+        'protobuf',
+        'zmq',
+    ],
 )
