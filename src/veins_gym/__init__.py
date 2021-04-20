@@ -55,7 +55,7 @@ def ensure_valid_scenario_dir(scenario_dir):
     return True
 
 
-def launch_veins(scenario_dir, seed, port, extra_args=None):
+def launch_veins(scenario_dir, seed, port, print_stdout=False, extra_args=None):
     """
     Launch a veins experiment and return the process instance.
 
@@ -73,8 +73,9 @@ def launch_veins(scenario_dir, seed, port, extra_args=None):
     for key, value in extra_args.items():
         command.append(f"{key}={value}")
     logging.debug("Launching veins experiment using command `%s`", command)
+    stdout = sys.stdout if print_stdout else subprocess.DEVNULL
     process = subprocess.Popen(
-        command, stdout=subprocess.DEVNULL, cwd=scenario_dir
+        command, stdout=stdout, cwd=scenario_dir
     )
     logging.debug("Veins process launched with pid %d", process.pid)
     return process
@@ -120,6 +121,7 @@ class VeinsEnv(gym.Env):
         run_veins=True,
         port=None,
         timeout=3.0,
+        print_veins_stdout=False,
         veins_kwargs=None,
     ):
         if scenario_dir is None:
@@ -135,6 +137,7 @@ class VeinsEnv(gym.Env):
         self.port = port
         self.bound_port = None
         self._timeout = timeout
+        self.print_veins_stdout = print_veins_stdout
 
         self.run_veins = run_veins
         self._passed_args = (
@@ -193,6 +196,7 @@ class VeinsEnv(gym.Env):
                 self.scenario_dir,
                 self._seed,
                 self.bound_port,
+                self.print_veins_stdout,
                 self._passed_args,
             )
             logging.info("Launched veins experiment, waiting for request.")
