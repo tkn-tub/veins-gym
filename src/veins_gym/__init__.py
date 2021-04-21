@@ -117,6 +117,13 @@ def shutdown_veins(process, gracetime_s=1.0):
     ), "Veins could not be killed."
 
 
+def serialize_action_discete(action):
+    """Serialize a single discrete action into protobuf wire format."""
+    reply = veinsgym_pb2.Reply()
+    reply.action.discrete.value = action
+    return reply.SerializeToString()
+
+
 class VeinsEnv(gym.Env):
     metadata = {"render.modes": []}
 
@@ -132,12 +139,14 @@ class VeinsEnv(gym.Env):
         port=None,
         timeout=3.0,
         print_veins_stdout=False,
+        action_serializer=serialize_action_discete,
         veins_kwargs=None,
     ):
         if scenario_dir is None:
             scenario_dir = self.default_scenario_dir
         assert ensure_valid_scenario_dir(scenario_dir)
         self.scenario_dir = scenario_dir
+        self._action_serializer = action_serializer
 
         self.action_space = None
         self.observation_space = None
@@ -169,11 +178,11 @@ class VeinsEnv(gym.Env):
         """
         Run one timestep of the environment's dynamics.
         """
-        self.socket.send(self._serialize_action(action))
+        self.socket.send(self._action_serializer(action))
         step_result = self._parse_request(self._recv_request())
         if step_result.done:
             self.socket.send(
-                self._serialize_action(self.action_space.sample())
+                self._action_serializer(self.action_space.sample())
             )
             logging.debug("Episode ended, waiting for veins to finish")
             self.veins.wait()
@@ -341,9 +350,3 @@ class VeinsEnv(gym.Env):
             False,
             {},
         )
-
-    @staticmethod
-    def _serialize_action(action):
-        reply = veinsgym_pb2.Reply()
-        reply.action.discrete.value = action
-        return reply.SerializeToString()
