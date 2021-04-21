@@ -55,7 +55,9 @@ def ensure_valid_scenario_dir(scenario_dir):
     return True
 
 
-def launch_veins(scenario_dir, seed, port, print_stdout=False, extra_args=None):
+def launch_veins(
+    scenario_dir, seed, port, print_stdout=False, extra_args=None
+):
     """
     Launch a veins experiment and return the process instance.
 
@@ -74,9 +76,7 @@ def launch_veins(scenario_dir, seed, port, print_stdout=False, extra_args=None):
         command.append(f"{key}={value}")
     logging.debug("Launching veins experiment using command `%s`", command)
     stdout = sys.stdout if print_stdout else subprocess.DEVNULL
-    process = subprocess.Popen(
-        command, stdout=stdout, cwd=scenario_dir
-    )
+    process = subprocess.Popen(command, stdout=stdout, cwd=scenario_dir)
     logging.debug("Veins process launched with pid %d", process.pid)
     return process
 
