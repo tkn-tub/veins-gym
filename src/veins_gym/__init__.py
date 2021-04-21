@@ -124,6 +124,25 @@ def serialize_action_discete(action):
     return reply.SerializeToString()
 
 
+def parse_space(space):
+    """Parse a Gym.spaces.Space from a protobuf request into python types."""
+    if space.HasField("discrete"):
+        return space.discrete.value
+    if space.HasField("box"):
+        return np.array(space.box.values, dtype=float)
+    if space.HasField("multi_discrete"):
+        return np.array(space.multi_discrete.values, dtype=int)
+    if space.HasField("multi_binary"):
+        return np.array(space.multi_binary.values, dtype=bool)
+    if space.HasField("tuple"):
+        return tuple(parse_space(subspace) for subspace in space.tuple.values)
+    if space.HasField("dict"):
+        return {
+            item.key: parse_space(item.space) for item in space.dict.values
+        }
+    raise RuntimeError("Unknown space type")
+
+
 class VeinsEnv(gym.Env):
     metadata = {"render.modes": []}
 
@@ -299,26 +318,6 @@ class VeinsEnv(gym.Env):
         assert rlist == [self.socket]
         return self.socket.recv()
 
-    def _parse_space(self, space):
-        if space.HasField("discrete"):
-            return space.discrete.value
-        if space.HasField("box"):
-            return np.array(space.box.values, dtype=float)
-        if space.HasField("multi_discrete"):
-            return np.array(space.multi_discrete.values, dtype=int)
-        if space.HasField("multi_binary"):
-            return np.array(space.multi_binary.values, dtype=bool)
-        if space.HasField("tuple"):
-            return tuple(
-                self._parse_space(subspace) for subspace in space.tuple.values
-            )
-        if space.HasField("dict"):
-            return {
-                item.key: self._parse_space(item.space)
-                for item in space.dict.values
-            }
-        raise RuntimeError("Unknown space type")
-
     def _parse_request(self, data):
         request = veinsgym_pb2.Request()
         request.ParseFromString(data)
@@ -337,7 +336,7 @@ class VeinsEnv(gym.Env):
             real_request.ParseFromString(real_data)
             # continue processing the real request
             request = real_request
-        observation = self._parse_space(request.step.observation)
-        reward = self._parse_space(request.step.reward)
+        observation = parse_space(request.step.observation)
+        reward = parse_space(request.step.reward)
         assert len(reward) == 1
         return StepResult(observation, reward[0], False, {})
