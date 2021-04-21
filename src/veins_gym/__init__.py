@@ -323,9 +323,7 @@ class VeinsEnv(gym.Env):
         request = veinsgym_pb2.Request()
         request.ParseFromString(data)
         if request.HasField("shutdown"):
-            return StepResult(
-                self.observation_space.sample(), np.array([0.0]), True, {}
-            )
+            return StepResult(self.observation_space.sample(), 0.0, True, {})
         if request.HasField("init"):
             # parse spaces
             self.action_space = eval(request.init.action_space_code)
@@ -337,16 +335,9 @@ class VeinsEnv(gym.Env):
             real_data = self._recv_request()
             real_request = veinsgym_pb2.Request()
             real_request.ParseFromString(real_data)
-            # process real request
-            return StepResult(
-                self._parse_space(real_request.step.observation),
-                self._parse_space(real_request.step.reward),
-                False,
-                {},
-            )
-        return StepResult(
-            self._parse_space(request.step.observation),
-            self._parse_space(request.step.reward),
-            False,
-            {},
-        )
+            # continue processing the real request
+            request = real_request
+        observation = self._parse_space(request.step.observation)
+        reward = self._parse_space(request.step.reward)
+        assert len(reward) == 1
+        return StepResult(observation, reward[0], False, {})
