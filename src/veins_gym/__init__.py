@@ -30,6 +30,7 @@ import os
 import signal
 import subprocess
 import sys
+from typing import Any, Dict, NamedTuple
 
 import gym
 import numpy as np
@@ -38,6 +39,15 @@ from gym import error, spaces, utils
 from gym.utils import seeding
 
 from . import veinsgym_pb2
+
+
+class StepResult(NamedTuple):
+    """Result record from one step in the invironment."""
+
+    observation: Any
+    reward: float
+    done: bool
+    info: Dict
 
 
 def ensure_valid_scenario_dir(scenario_dir):
@@ -160,17 +170,15 @@ class VeinsEnv(gym.Env):
         Run one timestep of the environment's dynamics.
         """
         self.socket.send(self._serialize_action(action))
-        observation, reward, done, info = self._parse_request(
-            self._recv_request()
-        )
-        if done:
+        step_result = self._parse_request(self._recv_request())
+        if step_result.done:
             self.socket.send(
                 self._serialize_action(self.action_space.sample())
             )
             logging.debug("Episode ended, waiting for veins to finish")
             self.veins.wait()
-        assert self.observation_space.contains(observation)
-        return observation, reward, done, info
+        assert self.observation_space.contains(step_result.observation)
+        return step_result
 
     def reset(self):
         """
@@ -306,7 +314,9 @@ class VeinsEnv(gym.Env):
         request = veinsgym_pb2.Request()
         request.ParseFromString(data)
         if request.HasField("shutdown"):
-            return self.observation_space.sample(), np.array([0.0]), True, {}
+            return StepResult(
+                self.observation_space.sample(), np.array([0.0]), True, {}
+            )
         if request.HasField("init"):
             # parse spaces
             self.action_space = eval(request.init.action_space_code)
@@ -319,13 +329,13 @@ class VeinsEnv(gym.Env):
             real_request = veinsgym_pb2.Request()
             real_request.ParseFromString(real_data)
             # process real request
-            return (
+            return StepResult(
                 self._parse_space(real_request.step.observation),
                 self._parse_space(real_request.step.reward),
                 False,
                 {},
             )
-        return (
+        return StepResult(
             self._parse_space(request.step.observation),
             self._parse_space(request.step.reward),
             False,
