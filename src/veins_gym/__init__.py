@@ -45,7 +45,7 @@ class StepResult(NamedTuple):
     """Result record from one step in the invironment."""
 
     observation: Any
-    reward: float
+    reward: np.float32
     done: bool
     info: Dict
 
@@ -129,7 +129,7 @@ def parse_space(space):
     if space.HasField("discrete"):
         return space.discrete.value
     if space.HasField("box"):
-        return np.array(space.box.values, dtype=float)
+        return np.array(space.box.values, dtype=np.float32)
     if space.HasField("multi_discrete"):
         return np.array(space.multi_discrete.values, dtype=int)
     if space.HasField("multi_binary"):
