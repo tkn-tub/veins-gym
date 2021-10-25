@@ -72,6 +72,7 @@ def launch_veins(
     print_stdout=False,
     extra_args=None,
     user_interface="Cmdenv",
+    config="General",
 ):
     """
     Launch a veins experiment and return the process instance.
@@ -82,6 +83,7 @@ def launch_veins(
     command = [
         "./run",
         f"-u{user_interface}",
+        f"-c{config}",
         f"--seed-set={seed}",
         f"--*.manager.seed={seed}",
         f"--*.gym_connection.port={port}",
@@ -166,6 +168,7 @@ class VeinsEnv(gym.Env):
         action_serializer=serialize_action_discete,
         veins_kwargs=None,
         user_interface="Cmdenv",
+        config="General",
     ):
         if scenario_dir is None:
             scenario_dir = self.default_scenario_dir
@@ -188,6 +191,7 @@ class VeinsEnv(gym.Env):
             veins_kwargs if veins_kwargs is not None else dict()
         )
         self._user_interface = user_interface
+        self._config = config
         self._seed = 0
         self.veins = None
         self._veins_shutdown_handler = None
@@ -242,6 +246,7 @@ class VeinsEnv(gym.Env):
                 self.print_veins_stdout,
                 self._passed_args,
                 self._user_interface,
+                self._config,
             )
             logging.info("Launched veins experiment, waiting for request.")
 
