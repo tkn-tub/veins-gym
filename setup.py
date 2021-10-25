@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="veins_gym",
-    version="0.2.1",
+    version="0.3.0",
     author="Dominik S. Buse",
     author_email="buse@ccs-labs.org",
     description="Reinforcement Learning-based VANET simulations",
