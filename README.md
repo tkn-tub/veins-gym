@@ -12,7 +12,9 @@ This project is licensed under the terms of the GNU General Public License 2.0.
 Hints and FAQ
 -------------
 
-Here are some frequent issues with Veins-Gym and its environments:
+Here are some frequent issues with Veins-Gym and its environments.
+
+Please also checkout the guide on how to build new environments in [doc/getting_started.md](https://github.com/tkn-tub/veins-gym/blob/master/doc/getting_started.md).
 
 
 ### Protobuf Files Out of Sync
