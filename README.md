@@ -4,6 +4,8 @@ Veins-Gym
 Veins-Gym exports Veins simulations as Open AI Gyms.
 This enables the application of Reinforcement Learning algorithms to solve problems in the VANET domain, in particular popular frameworks such as Tensorflow or PyTorch.
 
+To install, simply run `pip install veins-gym` ([Veins-Gym on PyPI](https://pypi.org/project/veins-gym/)).
+
 License
 -------
 This project is licensed under the terms of the GNU General Public License 2.0.
