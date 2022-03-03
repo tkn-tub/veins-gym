@@ -119,6 +119,12 @@ def shutdown_veins(process, gracetime_s=1.0):
             process.pid,
         )
         process.kill()
+        try:
+            process.wait(gracetime_s)
+        except subprocess.TimeoutExpired as _exc2:
+            logging.error(
+                "Veins process %d could not even be killed!", process.pid
+            )
     assert (
         process.poll() and process.returncode is not None
     ), "Veins could not be killed."
