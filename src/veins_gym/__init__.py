@@ -220,8 +220,10 @@ class VeinsEnv(gym.Env):
             self.socket.send(
                 self._action_serializer(self.action_space.sample())
             )
-            logging.debug("Episode ended, waiting for veins to finish")
-            self.veins.wait()
+            logging.debug("Episode ended")
+            if self.veins:
+                logging.debug("Waiting for veins to finish")
+                self.veins.wait()
         assert self.observation_space.contains(step_result.observation)
         return step_result
 
