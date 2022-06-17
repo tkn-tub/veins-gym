@@ -274,7 +274,7 @@ class VeinsEnv(gym.Env):
             signal.signal(signal.SIGTERM, veins_shutdown_handler)
             self._veins_shutdown_handler = veins_shutdown_handler
 
-        initial_request = self._parse_request(self._recv_request())[0]
+        initial_request = self._parse_request(self._recv_request()).observation
         logging.info("Received first request from Veins, ready to run.")
         return initial_request
 
@@ -360,4 +360,4 @@ class VeinsEnv(gym.Env):
         observation = parse_space(request.step.observation)
         reward = parse_space(request.step.reward)
         assert len(reward) == 1
-        return StepResult(observation, reward[0], False, {})
+        return StepResult(observation, float(reward[0]), False, {})
