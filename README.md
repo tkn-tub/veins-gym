@@ -101,3 +101,30 @@ gym.register(
 	}
 )
 ```
+
+### Using Stable-Baselines3 Agents
+
+Stable Baselines 3 is able to handle a Custom Env such as Veins-Gym Env, making modules of omnet++ being able to receive actions from state-of-art implementation of agents of RL such as Deep Q-Network. Just make sure that you install it with right permissions using "pip install stable-baselines3[all]" in your venv or machine if you want it entirely, including, for instance, gym API itself. You still need to install veinsgym separately. In your code you will need to import the agent you want to use and also make sure to import check_env too, so you can spot errors such as the dimension of your observations being wrong between an reset() call and an actual observation. 
+
+For the time being, veinsgym Env reset() involves to destroy an omnet++ simulation process and to create another. You may want to make sure you were able to run omnet++ processes via veinsgym without omnet++ simulation running by hand. For this same reason, veinsgym may be useful for multi-agent learning, but not so easily useful for federated learning (see Issue 5). 
+
+
+Below an example of agent. You may want to take a look at StableBaselineDQNAgent.py.
+
+```python
+from stable_baselines3 import DQN
+from stable_baselines3.common.env_checker import check_env
+
+#...
+def main():
+    env = gym.make("veins-v1")
+    # make sure to reset because you want to have GymEnv with an actual observation space instead of None (it will raise an error otherwise)
+    observation = env.reset()
+    model = DQN('MlpPolicy', env, verbose=1)
+    
+    # veinsgym will start and stop a omnet++ process various times during learning process
+    model.learn(total_timesteps=1800)
+    
+    # now starts to use the agent connected to your simulation
+
+```
