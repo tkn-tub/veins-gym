@@ -69,7 +69,7 @@ ENV SUMO_VERSION 1_6_0
 ENV SUMO_HOME /opt/sumo
 ENV OMNET_VERSION 5.6.2
 ENV OMNET_HOME /opt/omnet
-ENV VEINSGYM_VERSION 0.3.2
+ENV VEINSGYM_VERSION 0.3.3
 
 RUN apt-get update && apt-get -qq install \
 	libgdal20 \
