@@ -40,6 +40,8 @@ from gym.utils import seeding
 
 from . import veinsgym_pb2
 
+SENTINEL_EMPTY_SPACE = gym.spaces.Space()
+
 
 class StepResult(NamedTuple):
     """Result record from one step in the invironment."""
@@ -182,8 +184,8 @@ class VeinsEnv(gym.Env):
         self.scenario_dir = scenario_dir
         self._action_serializer = action_serializer
 
-        self.action_space = None
-        self.observation_space = None
+        self.action_space = SENTINEL_EMPTY_SPACE
+        self.observation_space = SENTINEL_EMPTY_SPACE
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REP)
@@ -357,6 +359,9 @@ class VeinsEnv(gym.Env):
             real_request.ParseFromString(real_data)
             # continue processing the real request
             request = real_request
+        # the gym needs to be initialized at this point!
+        assert self.action_space is not SENTINEL_EMPTY_SPACE
+        assert self.observation_space is not SENTINEL_EMPTY_SPACE
         observation = parse_space(request.step.observation)
         reward = parse_space(request.step.reward)
         assert len(reward) == 1
