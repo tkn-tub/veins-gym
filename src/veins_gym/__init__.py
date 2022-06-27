@@ -41,6 +41,7 @@ from gym.utils import seeding
 from . import veinsgym_pb2
 
 SENTINEL_EMPTY_SPACE = gym.spaces.Space()
+SENTINEL_NO_SEED_GIVEN = "NO SEED GIVEN"  # replace with pep 661 once ready
 
 
 class StepResult(NamedTuple):
@@ -229,13 +230,15 @@ class VeinsEnv(gym.Env):
         assert self.observation_space.contains(step_result.observation)
         return step_result
 
-    def reset(self):
+    def reset(self, seed=SENTINEL_NO_SEED_GIVEN, return_info=False, options=None):
         """
         Start and connect to a new veins experiment, return first observation.
 
         Shut down exisiting veins experiment processes and connections.
         Waits until first request from veins experiment has been received.
         """
+        del options  # currently not used/implemented
+
         self.close()
         self.socket = self.context.socket(zmq.REP)
         if self.port is None:
@@ -247,6 +250,9 @@ class VeinsEnv(gym.Env):
             self.socket.bind(f"tcp://127.0.0.1:{self.port}")
             self.bound_port = self.port
             logging.debug("Listening on configured port %d", self.bound_port)
+
+        if seed is not SENTINEL_NO_SEED_GIVEN:
+            self.seed(seed)
 
         if self.run_veins:
             self.veins = launch_veins(
@@ -278,6 +284,11 @@ class VeinsEnv(gym.Env):
 
         initial_request = self._parse_request(self._recv_request())[0]
         logging.info("Received first request from Veins, ready to run.")
+        if return_info:
+            logging.warning("return info not yet implemented for reset()")
+            initial_info = None  # not implemented
+            return initial_request, initial_info
+
         return initial_request
 
     def render(self, mode="human"):
